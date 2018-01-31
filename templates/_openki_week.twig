@@ -1,0 +1,245 @@
+{# Example for how to set options in twig templates by GROUP:                              #}
+{# openki({days: '5', locale: 'de', type: 'calendar', groups: '12345678', sort: 'title,-startLocal'}) #}
+
+{# Providing the divs we can write to #}
+<div class="openkicontainer">
+    <div class="day" id="Montag">
+        <div class="morning" id="morning1"></div>
+        <div class="afternoon" id="afternoon1"></div>
+        <div class="evening" id="evening1"></div>
+    </div>
+    <div class="day" id="Dienstag">
+        <div class="morning" id="morning2"></div>
+        <div class="afternoon" id="afternoon2"></div>
+        <div class="evening" id="evening2"></div>
+    </div>
+    <div class="day" id="Mittwoch">
+        <div class="morning" id="morning3"></div>
+        <div class="afternoon" id="afternoon3"></div>
+        <div class="evening" id="evening3"></div>
+    </div>
+    <div class="day" id="Donnerstag">
+        <div class="morning" id="morning4"></div>
+        <div class="afternoon" id="afternoon4"></div>
+        <div class="evening" id="evening4"></div>
+    </div>
+    <div class="day" id="Freitag">
+        <div class="morning" id="morning5"></div>
+        <div class="afternoon" id="afternoon5"></div>
+        <div class="evening" id="evening5"></div>
+    </div>
+</div>
+
+{# Maybe there will be more types in future #}
+{% if options.type == "calendar" %}
+
+<script>
+var url = 'https://openki.net/api/0/json/events?';
+//var day = moment().format('YYYY-MM-DD');
+
+// XMLHttpRequest helper
+var getJSON = function(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.responseType = 'json';
+  
+  xhr.onload = function() {
+    var status = xhr.status;
+    if (status == 200) {
+      callback(null, xhr.response);
+    } else {
+      callback(status);
+    }
+  };
+  xhr.send();
+};
+
+// Helper for check building blocks
+function contains(arr, element) {
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i] === element) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Sort function, ASZ only
+
+function getSortID(ptitle) {
+
+    var sortid = 0;
+    
+    var pfeila = "Pfeil → A";
+    var pfeilb = "Pfeil → B";
+    var kreis = "Kreis";
+    var dreieck = "Dreieck";
+    var viereck = "Viereck";
+    var spiral = "Spiral";
+    
+    if (ptitle.indexOf(pfeila) !== -1) {
+        sortid = 1;
+    } else if (ptitle.indexOf(pfeilb) !== -1) {
+        sortid = 2;
+    } else if (ptitle.indexOf(kreis) !== -1) {
+        sortid = 3;
+    } else if (ptitle.indexOf(dreieck) !== -1) {
+        sortid = 4;
+    } else if (ptitle.indexOf(viereck) !== -1) {
+        sortid = 5;
+    } else if (ptitle.indexOf(spiral) !== -1) {
+        sortid = 6;
+    } else {
+        sortid = 999;
+    }
+    
+    return sortid;
+}
+
+// helper for sorting by custom sort id
+
+function sortByID(container) {
+    var main = document.getElementById( container );
+
+    [].map.call( main.children, Object ).sort( function ( a, b ) {
+        return +a.id.match( /\d+/ ) - +b.id.match( /\d+/ );
+    }).forEach( function ( elem ) {
+        main.appendChild( elem );
+    });
+}
+
+// Compose filters for the request
+function filter(groups, after, before, sort) {
+    var values = 'groups=' + groups + '&after=' + after + '&before=' + before + '&sort=' + sort;
+    return values;
+}
+
+// Add content to '#day'-divs
+function innerData(daytime, pos, content) {
+    var html = document.getElementById( daytime+pos ).innerHTML += content;
+};
+
+// Getting the day for schedule
+function parseWeekDay(url, weekday, pos) {
+    var sortid = 0;
+    var sortid = 0;
+    day = moment().day(weekday).format('YYYY-MM-DD'); // get current week, first week day
+    getJSON(url + filter( '{{ options.groups }}', day, moment(day).add(1, 'days').format('YYYY-MM-DD'), '{{ options.sort }}' ), 
+    function(err, openkidata) {
+    if (err != null) {
+        console.log('Something went wrong with getJSON: ' + err);
+    } else {
+        var keys = Object.keys(openkidata.data);
+        moment.locale('{{ options.locale }}');
+        var checktimes = [];
+        var openkimorning = [];
+        var openkiafternoon = [];
+        var openkievening = [];
+        var showweekday = true;
+        var blocks = false;
+        
+        function getPartOfDay(startLocal, endLocal, title, filter, ddtime) {
+            var content = [];
+            
+            function addCourseWithTime() {
+                content += '<div id=\'' + sortid + '\' class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
+                sortid = sortid + 1;
+                // Color filter
+                if (title.startsWith(filter)) {
+                    content += '<div id=\'' + sortid + '\' class=\'exttitle colorblock\'>' + title + '</div>';
+                } else {
+                    content += '<div id=\'' + sortid + '\' class=\'exttitle\'>' + title + '</div>';
+                }
+                
+                // Push this start time to helper array for building blocks
+                checktimes.push(startLocal+" - "+endLocal);
+            }
+            
+            function addCourseWithoutTime() {
+                sortid = sortid+1;
+                // color filter
+                if (title.startsWith(filter)) {
+                    content += '<div id=\'' + sortid + '\' class=\'exttitle colorblock\'>' + title + '</div>';
+                } else {
+                    content += '<div id=\'' + sortid + '\' class=\'exttitle\'>' + title + '</div>';
+                }
+            }
+            
+            // filter by start time for building blocks
+            if (contains(checktimes, startLocal+" - "+endLocal)) {
+                addCourseWithoutTime();
+            } else {
+                addCourseWithTime();
+                blocks = true;
+            }
+            return content;
+        }
+        
+        function addBlockDaytime() {
+            if (moment(openkidata.data[i].startLocal).hour() <= 11) {
+                sortid = getSortID(ptitle);
+                openkimorning += getPartOfDay(pstartLocal, pendLocal, ptitle, 'Deutsch', 'morning');
+            }
+            else if (moment(openkidata.data[i].startLocal).hour() > 11 && moment(openkidata.data[i].startLocal).hour() <= 16) {
+                sortid = getSortID(ptitle);
+                openkiafternoon += getPartOfDay(pstartLocal, pendLocal, ptitle, 'Deutsch', 'afternoon');
+            }
+            else if (moment(openkidata.data[i].startLocal).hour() > 16 && moment(openkidata.data[i].startLocal).hour() <= 21) {
+                sortid = getSortID(ptitle);
+                openkievening += getPartOfDay(pstartLocal, pendLocal, ptitle, 'Deutsch', 'evening');
+            }
+        }
+    
+        for ( i = 0 ; i < keys.length ; i++ ) {
+            //var pdate = moment(openkidata.data[i].startLocal).format('dddd, L'); // with date
+            var pdate = moment(openkidata.data[i].startLocal).format('dddd');
+            var pstartLocal = moment(openkidata.data[i].startLocal).format('LT');
+            var pendLocal = moment(openkidata.data[i].endLocal).format('LT');
+            var ptitle = openkidata.data[i].title
+            
+            if (showweekday) {
+                openkimorning += '<div class=\'extdate\'>' + pdate + '</div>';
+                showweekday = false;
+            }
+            
+            addBlockDaytime();
+            
+        };
+        
+        var content = { morning: openkimorning, afternoon: openkiafternoon, evening: openkievening };
+        
+        innerData("morning", pos, content.morning);
+        innerData("afternoon", pos, content.afternoon);
+        innerData("evening", pos, content.evening);
+        
+        sortByID('morning1');
+        sortByID('afternoon1');
+        sortByID('morning3');
+        sortByID('afternoon3');
+        sortByID('morning5');
+        sortByID('afternoon5');
+        
+        /*function addRecent() {
+            var d = document.getElementById(moment().format('dddd'));
+            d.className += " recent";
+        }
+
+        addRecent();*/
+        
+        
+  }
+  
+});
+
+};
+
+
+// Get how many days to show
+for ( i = 1 ; i <= {{ options.days }} ; i++ ) {
+     parseWeekDay(url, i, i);
+}
+
+</script>
+
+{% endif %}
+

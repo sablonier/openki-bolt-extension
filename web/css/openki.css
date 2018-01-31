@@ -1,0 +1,145 @@
+/* Styles for container */
+
+.openkicontainer {
+  display: flex;
+  justify-content: space-around;
+  flex-flow: row wrap;
+}
+
+.openkicontainerday {
+  display: flex;
+  justify-content: space-around;
+  flex-flow: row wrap;
+  padding-bottom: 1.25rem;
+}
+
+.day {
+  flex: 1 1 0;
+  /*border-left: 1px solid #000;*/
+}
+
+.recent {
+  /*border: 1px solid rgba(240,242,192,1.0);*/
+}
+
+.morning {
+  min-height: 12rem;
+  /*padding: 0.5rem;*/
+  padding-right: 1rem;
+  border-bottom: 2px solid #ff0000;
+  margin-bottom: 0.5rem;
+}
+
+.afternoon {
+  min-height: 20rem;
+  /*padding: 0.5rem;*/
+  padding-right: 1rem;
+  border-bottom: 2px solid #ff0000;
+  margin-bottom: 0.5rem;
+}
+
+.evening {
+  /*padding: 0.5rem;*/
+  padding-right: 1rem;
+  min-height: 14rem;
+}
+
+.morningday {
+  border-bottom: 2px solid #ff0000;
+  padding-bottom: 0.5rem;
+}
+
+.afternoonday {
+  border-bottom: 2px solid #ff0000;
+  padding-bottom: 0.5rem;
+}
+
+.eveningday {
+}
+
+/* Styles for entries */
+
+.exttitle {
+    background: rgba(222,222,232,1.0);
+    padding-left: 0.2rem;
+    border-bottom: 1px solid #FFF;
+}
+
+.exttitleday {
+    background: rgba(222,222,232,1.0);
+    padding-left: 0.2rem;
+    font-size: 0.8rem;
+}
+
+.colorblock {
+    background: rgba(256,0,0,0.2);
+}
+
+.extdate {
+    background: transparent;
+    color: #000;
+    padding-left: 0;
+    /*border-left: 1px solid #000;*/
+    margin-bottom: 0.5rem;
+}
+
+.extdateday {
+    background: black;
+    color: white;
+    padding-left: 0;
+    /*border-left: 1px solid #000;*/
+    margin-bottom: 0.5rem;
+}
+
+.extduration {
+    /*font-size: 0.8rem;*/
+    background: transparent;
+    padding-left: 0;
+    border-bottom: 1px solid #FF0000;
+}
+
+.extduration-top {
+    /*font-size: 0.8rem;*/
+    padding-left: 0;
+    padding-top: 0.5rem;
+    background: transparent;
+    color: #f00;
+    /*border-top: 1px solid #FF0000;*/
+}
+
+@media (max-width: 830px) {
+  .openkicontainer {
+    display: flex;
+    justify-content: space-around;
+    flex-flow: column wrap;
+  }
+  .morning {
+    min-height: 0;
+    /*padding: 0.5rem;*/
+    padding-right: 1rem;
+    border-bottom: 2px solid #ff0000;
+    margin-bottom: 0.5rem;
+  }
+
+ .afternoon {
+    min-height: 0;
+    /*padding: 0.5rem;*/
+    padding-right: 1rem;
+    border-bottom: 2px solid #ff0000;
+    margin-bottom: 0.5rem;
+  }
+
+ .evening {
+    /*padding: 0.5rem;*/
+    padding-right: 1rem;
+    min-height: 0;
+  }
+  
+  .extdate {
+    background: #000;
+    color: #fff;
+    margin-top: 1.25rem;
+}
+  
+}
+

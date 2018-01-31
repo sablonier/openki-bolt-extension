@@ -1,0 +1,138 @@
+{# Example for how to set options in twig templates:                                      #}
+{# openki({locale: 'de', type: 'calendar', venue: '12345678', sort: 'title,-startLocal'}) #}
+
+{# Providing the divs we can write to #}
+<div class="openkicontainerday">
+    <div class="day" id="openki1">
+        <div class="morningday" id="morning1"></div>
+        <div class="afternoonday" id="afternoon1"></div>
+        <div class="eveningday" id="evening1"></div>
+    </div>
+</div>
+
+{# Maybe there will be more types in future #}
+{% if options.type == "calendar" %}
+
+<script>
+var url = 'https://openki.net/api/0/json/events?';
+//var day = moment().format('YYYY-MM-DD');
+
+// XMLHttpRequest helper
+var getJSON = function(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.responseType = 'json';
+  
+  xhr.onload = function() {
+    var status = xhr.status;
+    if (status == 200) {
+      callback(null, xhr.response);
+    } else {
+      callback(status);
+    }
+  };
+  xhr.send();
+};
+
+// Compose filters for the request
+function filter(groups, after, before, sort) {
+    var values = 'groups=' + groups + '&after=' + after + '&before=' + before + '&sort=' + sort;
+    return values;
+}
+
+// Add content to '#openki'-divs
+function innerData(daytime, pos, content) {
+  var html = document.getElementById( daytime+pos ).innerHTML += content;
+};
+
+// Getting the day for schedule
+function parseWeekDay(url, weekday, pos) {
+    day = moment().format('YYYY-MM-DD'); // get current day
+    getJSON(url + filter( '{{ options.groups }}', day, moment(day).add(1, 'days').format('YYYY-MM-DD'), '{{ options.sort }}' ), 
+    function(err, openkidata) {
+    if (err != null) {
+        console.log('Something went wrong with getJSON: ' + err);
+    } else {
+        var keys = Object.keys(openkidata.data);
+        moment.locale('{{ options.locale }}');
+        var daytime;
+        var morningblocks = true; 
+        var afternoonblocks = true;
+        var eveningblocks = true;
+        var openkimorning = [];
+        var openkiafternoon = [];
+        var openkievening = [];
+        var firstride = true;
+        
+        function getPartOfDay(startLocal, endLocal, title, filter, ddtime) {
+            var content = [];
+            // filter by word to get blocks
+            if (title.startsWith(filter)) {
+                if (ddtime == "morning" && morningblocks == true) {
+                    content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
+                    content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+                    morningblocks = false;
+                }
+                else if (ddtime == "afternoon" && afternoonblocks == true) {
+                    content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
+                    content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+                    afternoonblocks = false;
+                }
+                else if (ddtime == "evening" && eveningblocks == true) {
+                    content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
+                    content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+                    eveningblocks = false;
+                }
+                else {
+                    content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+                }
+            } else {
+                content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
+                content += '<div class=\'exttitleday\'>' + title + '</div>';
+            }
+            return content;
+        }
+    
+        for ( i = 0 ; i < keys.length ; i++ ) {
+            var pdate = moment(openkidata.data[i].startLocal).format('dddd, L'); // with date
+            //var pdate = moment(openkidata.data[i].startLocal).format('dddd');
+            var pstartLocal = moment(openkidata.data[i].startLocal).format('LT');
+            var pendLocal = moment(openkidata.data[i].endLocal).format('LT');
+            var ptitle = openkidata.data[i].title
+            
+            if (firstride) {
+                openkimorning += '<div><h4 class=\'card-title\' style=\'background: black; padding: 0.3rem; color:white;\'>' + pdate + '</h4></div>';
+                if (pdate == moment(day).format('dddd')) {
+                    var d = document.getElementById("openki1");
+                    d.className += " recent";
+                }
+                firstride = false;
+            }
+            
+            if (moment(openkidata.data[i].startLocal).hour() <= 12) {
+                openkimorning += getPartOfDay(pstartLocal, pendLocal, ptitle, 'Deutsch (', 'morning');
+            }
+            else if (moment(openkidata.data[i].startLocal).hour() > 12 && moment(openkidata.data[i].startLocal).hour() <= 16) {
+                openkiafternoon += getPartOfDay(pstartLocal, pendLocal, ptitle, 'Deutsch (', 'afternoon');
+            }
+            else if (moment(openkidata.data[i].startLocal).hour() > 16 && moment(openkidata.data[i].startLocal).hour() <= 21) {
+                openkievening += getPartOfDay(pstartLocal, pendLocal, ptitle, 'Deutsch (', 'evening');
+            }
+            
+        };
+        
+        var content = { morning: openkimorning, afternoon: openkiafternoon, evening: openkievening };
+        
+        innerData("morning", pos, content.morning);
+        innerData("afternoon", pos, content.afternoon);
+        innerData("evening", pos, content.evening);
+  }
+});
+};
+
+parseWeekDay(url, 1, 1);
+
+</script>
+
+{% endif %}
+
