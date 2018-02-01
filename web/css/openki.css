@@ -143,3 +143,32 @@
   
 }
 
+/* Credits CSS */
+
+.credits {
+    margin-top: 1.25rem;
+    background: #999;
+    color: #fff;
+    padding: 0.3rem;
+    padding-top: 0;
+    height: 27px;
+    display:inline-block;
+    font-size: 0.8rem;
+}
+
+.credits a {
+    font-weight: bold;
+    color: #fff;
+}
+
+.credits a:hover {
+    color: #F00;
+}
+
+.by-sa-logo {
+    width: 54px; 
+    height: auto; 
+    padding-top: 5px;
+    padding-left: 7px;
+}
+

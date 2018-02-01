@@ -1,5 +1,5 @@
 {# Example for how to set options in twig templates:                                      #}
-{# openki({locale: 'de', type: 'calendar', venue: '12345678', sort: 'title,-startLocal'}) #}
+{# openki({locale: 'de', type: 'calendar', venue: 'ed417de0', sort: 'title,-startLocal'}) #}
 
 {# Providing the divs we can write to #}
 <div class="openkicontainerday">
@@ -7,6 +7,10 @@
         <div class="morningday" id="morning1"></div>
         <div class="afternoonday" id="afternoon1"></div>
         <div class="eveningday" id="evening1"></div>
+        <div class="credits" id="credits">
+                <div>Dataset by <a href="https://openki.net">Openki </a>
+                &nbsp;<img class="by-sa-logo" src="extensions/local/sablonier/openki/web/img/by-sa.png"></div>
+        </div>
     </div>
 </div>
 
