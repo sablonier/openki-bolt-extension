@@ -68,23 +68,26 @@ function parseWeekDay(url, weekday, pos) {
         var openkievening = [];
         var firstride = true;
         
+        function addContent(content) {
+            content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
+            content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+            return content;
+        }
+        
         function getPartOfDay(startLocal, endLocal, title, filter, ddtime) {
             var content = [];
             // filter by word to get blocks
             if (title.startsWith(filter)) {
                 if (ddtime == "morning" && morningblocks == true) {
-                    content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
-                    content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+                    addContent(content);
                     morningblocks = false;
                 }
                 else if (ddtime == "afternoon" && afternoonblocks == true) {
-                    content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
-                    content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+                    addContent(content);
                     afternoonblocks = false;
                 }
                 else if (ddtime == "evening" && eveningblocks == true) {
-                    content += '<div class=\'extduration-top\'>' + startLocal + ' - ' + endLocal + '</div>';
-                    content += '<div class=\'exttitleday colorblock\'>' + title + '</div>';
+                    addContent(content);
                     eveningblocks = false;
                 }
                 else {

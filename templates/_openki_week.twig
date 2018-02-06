@@ -1,45 +1,42 @@
-{# Example for how to set options in twig templates by GROUP:                              #}
-{# openki({days: '5', locale: 'de', type: 'calendar', groups: '90aa41f3', sort: 'title,-startLocal'}) #}
+{# Example for how to set options in twig templates by GROUP:                                              #}
+{# openki_week({days: '5', locale: 'de', type: 'calendar', groups: '90aa41f3', sort: 'title,-startLocal'}) #}
 
-{# Providing the divs we can write to #}
-<div class="openkicontainer">
-    <div class="day" id="Montag">
-        <div class="morning" id="morning1"></div>
-        <div class="afternoon" id="afternoon1"></div>
-        <div class="evening" id="evening1"></div>
-    </div>
-    <div class="day" id="Dienstag">
-        <div class="morning" id="morning2"></div>
-        <div class="afternoon" id="afternoon2"></div>
-        <div class="evening" id="evening2"></div>
-    </div>
-    <div class="day" id="Mittwoch">
-        <div class="morning" id="morning3"></div>
-        <div class="afternoon" id="afternoon3"></div>
-        <div class="evening" id="evening3"></div>
-    </div>
-    <div class="day" id="Donnerstag">
-        <div class="morning" id="morning4"></div>
-        <div class="afternoon" id="afternoon4"></div>
-        <div class="evening" id="evening4"></div>
-    </div>
-    <div class="day" id="Freitag">
-        <div class="morning" id="morning5"></div>
-        <div class="afternoon" id="afternoon5"></div>
-        <div class="evening" id="evening5"></div>
-    </div>
-</div>
+{# Providing the container #}
+<div id="openkicontainer" class="openkicontainer"></div>
+    
 <div class="credits" id="credits">
     <div>Dataset by <a href="https://openki.net">Openki </a>
     <img class="by-sa-logo" src="../extensions/local/sablonier/openki/web/img/by-sa.png"></div>
 </div>
 
-{# Maybe there will be more types in future #}
+{# Maybe there are more types in future #}
 {% if options.type == "calendar" %}
 
 <script>
+
+// Openki API url
 var url = 'https://openki.net/api/0/json/events?';
-//var day = moment().format('YYYY-MM-DD');
+
+function appendDiv(appendid, appendclass, appendcontainer) {
+    var div = document.createElement('div');
+    div.setAttribute("id", appendid);
+    div.className = appendclass;
+    var container = document.getElementById(appendcontainer);
+    container.appendChild(div);
+    return;
+}
+
+function addCalendarDay(weekday) {
+    appendDiv(weekday, "day", "openkicontainer");
+    appendDiv("morning"+weekday, "morning", weekday);
+    appendDiv("afternoon"+weekday, "afternoon", weekday);
+    appendDiv("evening"+weekday, "evening", weekday);
+}
+
+// add divs for requested days
+for ( i = 1 ; i <= {{ options.days }} ; i++ ) {
+     addCalendarDay(i);
+}
 
 // XMLHttpRequest helper
 var getJSON = function(url, callback) {
@@ -125,7 +122,6 @@ function innerData(daytime, pos, content) {
 
 // Getting the day for schedule
 function parseWeekDay(url, weekday, pos) {
-    var sortid = 0;
     var sortid = 0;
     day = moment().day(weekday).format('YYYY-MM-DD'); // get current week, first week day
     getJSON(url + filter( '{{ options.groups }}', day, moment(day).add(1, 'days').format('YYYY-MM-DD'), '{{ options.sort }}' ), 
@@ -238,7 +234,7 @@ function parseWeekDay(url, weekday, pos) {
 };
 
 
-// Get how many days to show
+// parse all requested days
 for ( i = 1 ; i <= {{ options.days }} ; i++ ) {
      parseWeekDay(url, i, i);
 }
